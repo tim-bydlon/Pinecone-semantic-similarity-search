@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from pinecone import Pinecone
+from pinecone import Pinecone, ServerlessSpec
 from pinecone_datasets import load_dataset
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
@@ -15,36 +15,101 @@ class InteractiveQAFinder:
 
         # Initialize Pinecone
         self.pc = Pinecone(api_key=os.getenv("PINECONE_API"))
-        self.index = self.pc.Index("quora-questions")
+        self.index_name = "quora-questions-with-metadata"
 
         # Load the embedding model (same one used for the dataset)
         print("Loading embedding model...")
         self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-        # Load the dataset to access question text
-        print("Loading Quora dataset for text lookup...")
-        self.dataset = load_dataset("quora_all-MiniLM-L6-bm25")
-
-        # Create a lookup dictionary for fast question text retrieval
-        print("Creating question text lookup...")
-        self.question_lookup = self._create_question_lookup()
+        # Setup index with proper metadata following Pinecone best practices
+        self._setup_index_with_metadata()
 
         print("Smart Q&A Finder ready!")
         print()
 
-    def _create_question_lookup(self):
-        """Create a dictionary mapping question IDs to their text for fast lookup."""
-        docs = self.dataset.documents
-        lookup = {}
+    def _setup_index_with_metadata(self):
+        """Setup index with proper metadata following Pinecone best practices."""
+
+        # Create index if it doesn't exist
+        if not self.pc.has_index(self.index_name):
+            print(f"Creating index '{self.index_name}' with metadata support...")
+            self.pc.create_index(
+                name=self.index_name,
+                dimension=384,  # MiniLM embedding dimension
+                metric="cosine",
+                spec=ServerlessSpec(
+                    cloud="aws",
+                    region="us-east-1"
+                )
+            )
+            print("Index created!")
+        else:
+            print(f"Index '{self.index_name}' already exists.")
+
+        self.index = self.pc.Index(self.index_name)
+
+        # Check if we need to upsert data with metadata
+        stats = self.index.describe_index_stats()
+        if stats['total_vector_count'] == 0:
+            self._upsert_with_metadata()
+
+    def _upsert_with_metadata(self):
+        """Upsert data with text stored in metadata (Pinecone best practice)."""
+        print("Loading Quora dataset...")
+        dataset = load_dataset("quora_all-MiniLM-L6-bm25")
+        docs = dataset.documents
+
+        print("Upserting data with metadata (following Pinecone best practices)...")
+
+        batch_size = 100
+        max_records = 1000  # Limit for demo
+        vectors_to_upsert = []
+        count = 0
 
         for _, row in docs.iterrows():
-            question_id = str(row['id'])
-            blob_data = row['blob']
-            if isinstance(blob_data, dict) and 'text' in blob_data:
-                lookup[question_id] = blob_data['text'].strip()
+            if count >= max_records:
+                break
 
-        print(f"Created lookup for {len(lookup)} questions")
-        return lookup
+            # Get question text from blob
+            blob_data = row['blob']
+            question_text = blob_data.get('text', '').strip() if isinstance(blob_data, dict) else ''
+
+            if not question_text:
+                continue
+
+            # Convert vector to list if needed
+            vector = row['values']
+            if hasattr(vector, 'tolist'):
+                vector = vector.tolist()
+            elif not isinstance(vector, list):
+                vector = list(vector)
+
+            # Create record with metadata (PINECONE BEST PRACTICE)
+            record = {
+                "id": str(row['id']),
+                "values": vector,
+                "metadata": {
+                    "question_text": question_text,  # Store text in metadata!
+                    "source": "quora",
+                    "record_index": count
+                }
+            }
+
+            vectors_to_upsert.append(record)
+            count += 1
+
+            # Upsert in batches
+            if len(vectors_to_upsert) >= batch_size:
+                self.index.upsert(vectors=vectors_to_upsert)
+                print(f"Upserted batch of {len(vectors_to_upsert)} records")
+                vectors_to_upsert = []
+
+        # Upsert remaining records
+        if vectors_to_upsert:
+            self.index.upsert(vectors=vectors_to_upsert)
+            print(f"Upserted final batch of {len(vectors_to_upsert)} records")
+
+        print(f"Successfully upserted {count} records with metadata!")
 
     def embed_question(self, question_text):
         """Convert a question to vector embedding using the same model as the dataset."""
@@ -85,7 +150,7 @@ class InteractiveQAFinder:
             return None
 
     def display_results(self, user_question, results):
-        """Display search results with question text and similarity scores."""
+        """Display search results using metadata (Pinecone best practice)."""
         print(f"Question: '{user_question}'")
         print("=" * 60)
 
@@ -100,8 +165,8 @@ class InteractiveQAFinder:
             question_id = match.id
             similarity_score = match.score
 
-            # Get the actual question text
-            question_text = self.question_lookup.get(str(question_id), "Text not available")
+            # Get text directly from metadata (PINECONE BEST PRACTICE - no external lookup needed!)
+            question_text = match.metadata.get('question_text', 'Text not available')
 
             print(f"{i}. Score: {similarity_score:.4f}")
             print(f"   Question: {question_text}")
