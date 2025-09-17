@@ -1,10 +1,10 @@
 # Smart Q&A Finder
 
-A semantic question similarity search system built with Pinecone's integrated embedding and the Quora Question Pairs dataset. This project demonstrates how to build intelligent Q&A systems using Pinecone's latest integrated inference capabilities for direct text search without manual embedding.
+A semantic question similarity search system built with Pinecone's integrated embedding and the Quora Question Pairs dataset. 
 
 ## Overview
 
-The Smart Q&A Finder uses Pinecone's integrated embedding with llama-text-embed-v2 to automatically embed and search user questions against 522,931 Quora questions. Simply type a question and get semantically similar questions instantly - no manual embedding required.
+The Smart Q&A Finder uses Pinecone's integrated embedding with llama-text-embed-v2 to automatically embed and search user questions against 522,931 Quora questions. Simply type a question and get semantically similar questions instantly.
 
 ## Features
 
@@ -13,7 +13,6 @@ The Smart Q&A Finder uses Pinecone's integrated embedding with llama-text-embed-
 - **Automatic Data Loading**: All 522K+ Quora questions loaded automatically
 - **Real Question Text**: Displays actual question content with similarity scores
 - **Fast Retrieval**: Sub-second search across entire dataset
-- **Pinecone Best Practices**: Uses latest integrated inference capabilities
 
 ## Quick Start
 
@@ -42,17 +41,6 @@ echo "PINECONE_API=your_api_key_here" > .env
 python simple_semantic.py
 ```
 
-That's it! The system will automatically:
-- Create an index with integrated embedding
-- Load all Quora questions (first run only)
-- Start the interactive search interface
-
-## Usage
-
-### Interactive Search
-
-```bash
-python simple_semantic.py
 ```
 
 ### Example Session
@@ -90,8 +78,6 @@ Found 5 similar questions:
 5. Score: 0.4824
    Question: Between Java and Python, which one is better to learn first and why?
 ```
-
-## How It Works
 
 ### Architecture
 ```
@@ -177,41 +163,6 @@ for hit in results['result']['hits']:
 
 4. **"Error parsing request: Invalid input: Batch size exceeds 96"**
    - Already handled in code with proper batch sizing
-
-## Production Considerations
-
-This implementation already includes production-ready features:
-
-- ✅ **Integrated Embedding**: No manual model management
-- ✅ **Automatic Scaling**: Pinecone handles infrastructure
-- ✅ **Full Dataset**: All 522K+ questions loaded
-- ✅ **Error Handling**: Proper exception handling and retries
-- ✅ **Best Practices**: Following Pinecone's latest API patterns
-
-### Scaling Further
-
-To scale for production use:
-
-1. **Web Interface**: Add Flask/FastAPI REST API
-2. **Authentication**: Add user management and API keys
-3. **Caching**: Add Redis for frequent queries
-4. **Monitoring**: Add logging and metrics
-5. **Rate Limiting**: Add request throttling
-6. **Answer Integration**: Connect to answer database
-
-## Key Benefits
-
-### vs Manual Embedding
-- **No Model Management**: Pinecone handles embedding model
-- **Automatic Updates**: Model improvements happen transparently
-- **Simplified Code**: Direct text input, no preprocessing needed
-- **Better Performance**: Optimized embedding inference
-
-### vs Keyword Search
-- **Semantic Understanding**: Finds meaning, not just word matches
-- **Query Flexibility**: Works with different phrasings
-- **Better Results**: Higher relevance scores
-- **Context Aware**: Understands question intent
 
 ## Resources
 
