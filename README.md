@@ -41,7 +41,6 @@ echo "PINECONE_API=your_api_key_here" > .env
 python simple_semantic.py
 ```
 
-```
 
 ### Example Session
 
