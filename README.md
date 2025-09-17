@@ -1,34 +1,21 @@
 # Smart Q&A Finder
 
-An interactive semantic question similarity search system built with Pinecone vector database, sentence transformers, and the Quora Question Pairs dataset. This project demonstrates how to build intelligent Q&A systems that can find semantically similar questions even when they use different wording.
+A semantic question similarity search system built with Pinecone's integrated embedding and the Quora Question Pairs dataset. This project demonstrates how to build intelligent Q&A systems using Pinecone's latest integrated inference capabilities for direct text search without manual embedding.
 
 ## Overview
 
-The Smart Q&A Finder embeds user questions in real-time using the all-MiniLM-L6-v2 model and searches against 522,931 pre-embedded Quora questions. Instead of keyword matching, it understands the meaning and context of questions to find the most relevant matches with actual question text and similarity scores.
+The Smart Q&A Finder uses Pinecone's integrated embedding with llama-text-embed-v2 to automatically embed and search user questions against 522,931 Quora questions. Simply type a question and get semantically similar questions instantly - no manual embedding required.
 
 ## Features
 
-- **🔍 Interactive Search**: Type any question and get instant semantic matches
-- **🧠 Real-time Embedding**: User questions embedded with all-MiniLM-L6-v2 model
-- **📝 Actual Question Text**: Displays real question content from Quora dataset
-- **⚡ Fast Retrieval**: Sub-second search across 522K+ pre-embedded questions
-- **📊 Similarity Scores**: Precise cosine similarity scores for each match
-- **💾 Vector Database**: Powered by Pinecone's scalable infrastructure
+- **Direct Text Search**: Type questions directly, no embedding needed
+- **Integrated Embedding**: Powered by llama-text-embed-v2 (1024 dimensions)
+- **Automatic Data Loading**: All 522K+ Quora questions loaded automatically
+- **Real Question Text**: Displays actual question content with similarity scores
+- **Fast Retrieval**: Sub-second search across entire dataset
+- **Pinecone Best Practices**: Uses latest integrated inference capabilities
 
-## Project Structure
-
-```
-pinecone_dev/
-├── README.md                 # This file
-├── main.py                  # Setup script - creates index and loads data
-├── interactive_qa_finder.py # 🌟 Main application - Interactive Q&A Finder
-├── simple_qa_finder.py      # Basic demo version
-├── .env                     # API key storage (secure)
-├── .gitignore              # Git ignore rules
-└── requirements.txt        # Python dependencies
-```
-
-## Setup Instructions
+## Quick Start
 
 ### 1. Prerequisites
 
@@ -37,67 +24,47 @@ pinecone_dev/
 
 ### 2. Installation
 
-1. **Clone/download this project**
-
-2. **Create virtual environment** (recommended):
-   ```bash
-   python -m venv venv_pc
-   source venv_pc/bin/activate  # On Windows: venv_pc\Scripts\activate
-   ```
-
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### 3. Configuration
-
-1. **Get your Pinecone API key**:
-   - Sign up at [pinecone.io](https://pinecone.io)
-   - Create a project and copy your API key
-
-2. **Set up your API key**:
-   - Open `.env` file
-   - Replace `your_api_key_here` with your actual Pinecone API key:
-   ```
-   PINECONE_API=your_actual_api_key_here
-   ```
-
-### 4. Initial Setup (First Time Only)
-
-Run the setup script to create your index and load data:
-
 ```bash
-python main.py
+# Clone and setup
+git clone <your-repo>
+cd pinecone_dev
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up API key in .env file
+echo "PINECONE_API=your_api_key_here" > .env
 ```
 
-This will:
-- Create a Pinecone index called "quora-questions"
-- Load and upsert 1,000 sample questions from the Quora dataset
-- Display dataset information and confirm successful setup
+### 3. Run
 
-**Note**: This only needs to be run once. The index will persist in Pinecone.
+```bash
+python simple_semantic.py
+```
+
+That's it! The system will automatically:
+- Create an index with integrated embedding
+- Load all Quora questions (first run only)
+- Start the interactive search interface
 
 ## Usage
 
-### Running the Interactive Q&A Finder
-
-Execute the main interactive application:
+### Interactive Search
 
 ```bash
-python interactive_qa_finder.py
+python simple_semantic.py
 ```
 
-Choose between:
-1. **Interactive mode**: Type your own questions
-2. **Demo mode**: See predefined examples
-
-### Example Output
+### Example Session
 
 ```
-🔍 Interactive Smart Q&A Finder
+Initializing Simple Semantic Search...
+Index 'quora-simple-semantic' already exists.
+Index contains 9024 vectors
+Simple Semantic Search ready!
+
+Simple Semantic Search
 ==================================================
-Ask any question and find semantically similar questions from Quora's dataset!
 Type 'quit' to exit
 
 Your question: How do I learn Python programming?
@@ -108,94 +75,89 @@ Question: 'How do I learn Python programming?'
 ============================================================
 Found 5 similar questions:
 
-1. Score: 0.5491
-   Question: How do I learn a computer language like java?
+1. Score: 0.5795
+   Question: Starting with no programming experience, how long will it take to learn Python 3?
 
-2. Score: 0.5273
-   Question: What's the best way to start learning robotics?
+2. Score: 0.5683
+   Question: How should I start learning Python?
 
-3. Score: 0.5149
-   Question: What is Java programming? How To Learn Java Programming Language ?
+3. Score: 0.5675
+   Question: How should I begin learning Python?
 
-4. Score: 0.4817
-   Question: What math does a complete newbie need to understand algorithms for computer programming?
+4. Score: 0.5628
+   Question: How do I learn Python systematically?
 
-5. Score: 0.4523
-   Question: How can I learn computer security?
-```
-
-### Running the Basic Demo
-
-For a simple demonstration without interaction:
-
-```bash
-python simple_qa_finder.py
+5. Score: 0.4824
+   Question: Between Java and Python, which one is better to learn first and why?
 ```
 
 ## How It Works
 
-### 1. Data Pipeline
-- **Dataset**: Uses Quora Question Pairs dataset (`quora_all-MiniLM-L6-bm25`)
-- **Embeddings**: Pre-computed using MiniLM sentence transformer (384 dimensions)
-- **Storage**: Vectors stored in Pinecone serverless index
-
-### 2. Search Process
-1. User types question in interactive interface
-2. Question embedded using all-MiniLM-L6-v2 model (384 dimensions)
-3. Vector similarity search finds closest matches using cosine distance
-4. Results ranked by similarity score (higher = more similar)
-5. Returns actual question text from blob field with similarity scores
-
-### 3. Architecture
+### Architecture
 ```
-User Question → [Embedding Model] → Query Vector → Pinecone Index → Similar Questions
+User Question → Pinecone Integrated Embedding → Semantic Search → Similar Questions
 ```
 
-## Technical Details
+### Technical Implementation
 
-- **Vector Dimensions**: 384 (MiniLM-L6 model)
+1. **Index Creation**: Uses `create_index_for_model` with llama-text-embed-v2
+2. **Data Loading**: Loads Quora dataset and uses `upsert_records` for text data
+3. **Search**: Direct text input via integrated embedding search API
+4. **Results**: Returns actual question text with similarity scores
+
+### Key Technical Details
+
+- **Model**: llama-text-embed-v2 (Pinecone hosted)
+- **Dimensions**: 1024 (automatically handled)
 - **Similarity Metric**: Cosine similarity
 - **Index Type**: Pinecone Serverless (AWS us-east-1)
-- **Dataset Size**: 522,931 total questions (1,000 loaded in demo)
-- **Response Time**: Sub-second query performance
+- **Dataset**: 522,931 Quora questions
+- **Search Method**: Integrated inference API
 
-## Production Considerations
+## Project Structure
 
-This project already implements core production features:
-- ✅ **Real-time Text Embedding**: Integrated all-MiniLM-L6-v2 model
-- ✅ **Question Text Access**: Implemented blob field access for actual content
-- ✅ **Interactive Interface**: Built command-line interactive demo
+```
+pinecone_dev/
+├── simple_semantic.py    # 🌟 Main application
+├── requirements.txt      # Python dependencies
+├── .env                  # API key (create this)
+├── .gitignore           # Git ignore rules
+└── README.md            # This file
+```
 
-To scale further, you could:
+## Configuration
 
-1. **Answer Retrieval**: Connect to answer database to return actual responses
-2. **Scale Data**: Load the complete 522K dataset instead of 1K sample
-3. **Add Metadata**: Include categories, timestamps, vote counts for filtering
-4. **Web Interface**: Build Flask/FastAPI web app
-5. **Caching**: Add response caching for frequent queries
-6. **Authentication**: Add user authentication and query logging
+### Environment Variables
 
-## Files Reference
+Create a `.env` file:
+```
+PINECONE_API=your_pinecone_api_key_here
+```
 
-### `interactive_qa_finder.py` ⭐
-- **Purpose**: Main interactive Q&A application
-- **Function**: Real-time question embedding and semantic search
-- **When to run**: Primary application for asking questions
+### API Key Setup
 
-### `main.py`
-- **Purpose**: One-time setup script
-- **Function**: Creates index, loads data
-- **When to run**: Only when setting up project or recreating index
+1. Sign up at [pinecone.io](https://pinecone.io)
+2. Create a project and copy your API key
+3. Add it to your `.env` file
 
-### `simple_qa_finder.py`
-- **Purpose**: Basic demonstration version
-- **Function**: Shows working similarity search without embeddings
-- **When to run**: Quick demo without interaction
+## Advanced Usage
 
-### `.env`
-- **Purpose**: Secure API key storage
-- **Security**: Already in .gitignore to prevent accidental commits
-- **Format**: `PINECONE_API=your_key_here`
+### Programmatic Access
+
+```python
+from simple_semantic import SimpleSemanticSearch
+
+# Initialize
+searcher = SimpleSemanticSearch()
+
+# Search
+results = searcher.search_questions("your question here")
+
+# Access results
+for hit in results['result']['hits']:
+    print(f"Score: {hit['_score']}")
+    print(f"Question: {hit['fields']['question_text']}")
+```
 
 ## Troubleshooting
 
@@ -205,35 +167,58 @@ To scale further, you could:
    - Check your `.env` file has the correct API key
    - Ensure no extra spaces around the `=` sign
 
-2. **"Unable to prepare type ndarray for serialization"**
-   - This is handled in the code with vector conversion
-   - If it occurs, ensure vectors are converted to Python lists
+2. **"Index is empty, loading Quora data..."**
+   - Normal on first run - will load all questions automatically
+   - Takes a few minutes but only happens once
 
 3. **SSL Certificate errors**
    - Run: `/Applications/Python\ 3.13/Install\ Certificates.command`
-   - Or update certificates: `pip install --upgrade certifi`
+   - Or: `pip install --upgrade certifi`
 
-4. **Index already exists**
-   - Normal behavior - the index persists in Pinecone
-   - Delete from Pinecone console if you want to recreate
+4. **"Error parsing request: Invalid input: Batch size exceeds 96"**
+   - Already handled in code with proper batch sizing
 
-## Next Steps
+## Production Considerations
 
-Future enhancements for this project:
+This implementation already includes production-ready features:
 
-1. **Answer Integration**: Connect to Quora answer database for complete Q&A
-2. **Web Interface**: Build Flask/FastAPI web app with nice UI
-3. **Advanced Filtering**: Add metadata-based filtering (categories, dates)
-4. **Batch Processing**: Load complete 522K dataset for full coverage
-5. **Caching Layer**: Redis cache for frequently asked questions
-6. **User Analytics**: Track popular questions and search patterns
+- ✅ **Integrated Embedding**: No manual model management
+- ✅ **Automatic Scaling**: Pinecone handles infrastructure
+- ✅ **Full Dataset**: All 522K+ questions loaded
+- ✅ **Error Handling**: Proper exception handling and retries
+- ✅ **Best Practices**: Following Pinecone's latest API patterns
+
+### Scaling Further
+
+To scale for production use:
+
+1. **Web Interface**: Add Flask/FastAPI REST API
+2. **Authentication**: Add user management and API keys
+3. **Caching**: Add Redis for frequent queries
+4. **Monitoring**: Add logging and metrics
+5. **Rate Limiting**: Add request throttling
+6. **Answer Integration**: Connect to answer database
+
+## Key Benefits
+
+### vs Manual Embedding
+- **No Model Management**: Pinecone handles embedding model
+- **Automatic Updates**: Model improvements happen transparently
+- **Simplified Code**: Direct text input, no preprocessing needed
+- **Better Performance**: Optimized embedding inference
+
+### vs Keyword Search
+- **Semantic Understanding**: Finds meaning, not just word matches
+- **Query Flexibility**: Works with different phrasings
+- **Better Results**: Higher relevance scores
+- **Context Aware**: Understands question intent
 
 ## Resources
 
-- [Pinecone Documentation](https://docs.pinecone.io/)
+- [Pinecone Integrated Inference](https://www.pinecone.io/blog/integrated-inference/)
 - [Pinecone Python SDK](https://docs.pinecone.io/reference/python-sdk)
+- [Llama Text Embed v2 Model](https://www.pinecone.io/learn/nvidia-for-pinecone-inference/)
 - [Quora Question Pairs Dataset](https://www.kaggle.com/c/quora-question-pairs)
-- [MiniLM Sentence Transformers](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
 
 ## License
 
